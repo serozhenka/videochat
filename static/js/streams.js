@@ -8,6 +8,38 @@ let localTracks = []
 let remoteUsers = {}
 
 let displayLocalStream = async () => {
+    let handleUserJoin = async function(user, mediaType) {
+        remoteUsers[user.uid] = user
+        await client.subscribe(user, mediaType)
+
+        if (mediaType === 'video') {
+            let videoPlayer = document.getElementById(`user-container-${user.uid}`)
+            if (videoPlayer) {
+                videoPlayer.remove()
+            }
+
+            videoPlayer = `<div class="video-container" id="user-container-${user.uid}">
+                            <div class="username-wrappper"><span class="user-name">My name</span></div>
+                            <div class="video-player" id="user-${user.uid}"></div>
+                        </div>`
+            document.getElementById('video-streams').insertAdjacentHTML('beforeend', videoPlayer)
+
+            user.videoTrack.play(`user-${user.uid}`)
+            if (mediaType === "audio") {
+                user.audioTrack.play()
+            }
+
+        }
+    }
+
+    let handleUserLeft = async function(user) {
+        delete remoteUsers[user.uid]
+        document.getElementById(`user-container-${user.uid}`).remove()
+    }
+
+    client.on('user-published', handleUserJoin)
+    client.on('user-left', handleUserLeft)
+
     uid = await client.join(app_id, channel, token, null)
     localTracks =  await AgoraRTC.createMicrophoneAndCameraTracks()
 
