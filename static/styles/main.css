@@ -51,8 +51,29 @@ body {
     width: 100%;
 }
 
+/*Room styling | controls*/
 
+#controls-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    gap: 1em;
+    position: fixed;
+    bottom: 30px;
+}
 
+.control-icon {
+    width: 30px;
+    height: 30px;
+    background-color: #fff;
+    box-shadow: var(--shaddow);
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#leave-btn {
+    background-color: rgba(255, 80, 80, 1);
+}
 
 
 
