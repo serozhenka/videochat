@@ -7,7 +7,7 @@
         <section class="form-container">
             <img id="logo" src="{% static 'images/chat-icon.png' %}"/>
 
-            <div>
+            <div id="welcome-message">
                 <h1>Welcome to MyChat</h1>
                 <p>A group video calling application just for you!</p>
             </div>
@@ -16,6 +16,11 @@
                 <div class="form-field">
                     <label for="">Room Name</label>
                     <input type="text" name="room" placeholder="Enter room name" style="">
+                </div>
+
+                <div class="form-field">
+                    <label for="">Your username</label>
+                    <input type="text" name="username" placeholder="Enter username" style="">
                 </div>
                 
                 <div class="form-field">
@@ -30,6 +35,7 @@
         let handleSubmit = async function(e) {
             e.preventDefault()
             let room = e.target.room.value.toUpperCase()
+            let name = e.target.username.value
 
             let response = await fetch(`/get_token/?channelName=${room}`)
             let data = await response.json()
@@ -39,6 +45,7 @@
             sessionStorage.setItem('uid', uid)
             sessionStorage.setItem('token', token)
             sessionStorage.setItem('room', room)
+            sessionStorage.setItem('username', name)
 
             window.open('{% url 'room' %}', '_self')
         }

@@ -2,7 +2,7 @@ const app_id = '0c313de6efdc4ded9e4901752859b779'
 const channel = sessionStorage.getItem('room')
 const token = sessionStorage.getItem('token')
 let uid = Number(sessionStorage.getItem('uid'))
-console.log('data', app_id, channel, token)
+let username = sessionStorage.getItem('username')
 
 const client = AgoraRTC.createClient({mode: 'rtc', codec: 'vp8'})
 let localTracks = []
@@ -21,9 +21,10 @@ let displayLocalStream = async () => {
         console.error('error', error)
     }
     localTracks =  await AgoraRTC.createMicrophoneAndCameraTracks()
+    let member = await createMember()
 
     let videoPlayer = `<div class="video-container" id="user-container-${uid}">
-                            <div class="username-wrappper"><span class="user-name">My name</span></div>
+                            <div class="username-wrappper"><span class="user-name">${member.name}</span></div>
                             <div class="video-player" id="user-${uid}"></div>
                         </div>`
     document.getElementById('video-streams').insertAdjacentHTML('beforeend', videoPlayer)
@@ -42,8 +43,9 @@ let handleUserJoin = async function(user, mediaType) {
             videoPlayer.remove()
         }
 
+        let member = await getMember(user)
         videoPlayer = `<div class="video-container" id="user-container-${user.uid}">
-                        <div class="username-wrappper"><span class="user-name">My name</span></div>
+                        <div class="username-wrappper"><span class="user-name">${member.name}</span></div>
                         <div class="video-player" id="user-${user.uid}"></div>
                     </div>`
         document.getElementById('video-streams').insertAdjacentHTML('beforeend', videoPlayer)
@@ -66,6 +68,7 @@ let leaveStream = async function() {
         localTracks[i].close()
     }
 
+    await deleteMember()
     await client.leave()
     window.open('/', '_self')
 }
@@ -90,6 +93,34 @@ let toogleCamera = async function(e) {
     }
 }
 
+let createMember = async function() {
+    let response = await fetch('/create-member/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({'name': username, 'room_name': channel, 'uid': uid})
+    })
+    return await response.json()
+}
+
+let getMember = async function(user) {
+    let response = await fetch(`/get-member/?uid=${user.uid}&room_name=${channel}`)
+    return await response.json()
+}
+
+let deleteMember = async function() {
+    let response = await fetch('/delete-member/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({'name': username, 'room_name': channel, 'uid': uid})
+    })
+    return await response.json()
+}
+
+window.addEventListener('beforeunload', deleteMember)
 document.getElementById('leave-btn').addEventListener('click', leaveStream)
 document.getElementById('cam-btn').addEventListener('click', toogleCamera)
 document.getElementById('mic-btn').addEventListener('click', toogleVoice)
